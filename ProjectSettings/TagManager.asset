@@ -11,11 +11,6 @@ TagManager:
   - HPG_0
   - HPG_1
   - Suitguy
-  - Home
-  - Fire
-  - Time
-  - Terrain
-  - Procedural
   layers:
   - Default
   - TransparentFX

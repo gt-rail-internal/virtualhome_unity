@@ -445,4 +445,27 @@ namespace StoryGenerator.Recording
         }
 
     }
+
+     public static class TimeUtils  {
+        
+        public static int GetUnixTime()
+        {
+            return (int) (DateTime.UtcNow - new DateTime(2022, 08, 15)).TotalSeconds;
+        }
+
+        public static int GetCurrentDayNumber()
+        {
+            return (int) DateTime.Now.DayOfWeek;
+        }
+    
+        public static string GetCurrentDayName()
+        {
+            return DateTime.Now.DayOfWeek.ToString();
+        }
+    
+        public static string GetCurrentTime()
+        {
+            return DateTime.Now.ToString("HH:mm");
+        }
+    }
 }
