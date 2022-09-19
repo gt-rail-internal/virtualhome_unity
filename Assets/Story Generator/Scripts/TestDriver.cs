@@ -1077,8 +1077,6 @@ namespace StoryGenerator
 
                         }
                     }
-
-
                 }
 
                 else if (networkRequest.action == "fast_reset")
@@ -1178,11 +1176,11 @@ namespace StoryGenerator
 
                     IList<int> indexes = networkRequest.intParams;
 
-                    if (!CheckCameraIndexes(indexes, sensors.Count)) {
+                    if (!CheckSensorIndexes(indexes, sensors.Count)) {
                         response.success = false;
                         response.message = "Invalid parameters";
                     } else {
-                        IList<SensorInfo> sensorData = SensorUtils.CreateCameraData(sensors, indexes);
+                        IList<SensorInfo> sensorData = SensorUtils.CreateSensorData(sensors, indexes);
 
                         response.success = true;
                         response.message = JsonConvert.SerializeObject(sensorData);
@@ -1213,13 +1211,10 @@ namespace StoryGenerator
 
                         response.message = "Sensor updated";
                         response.success = true;
-
                     }
-
                 }
 
-                else if (networkRequest.action == "start_recording") 
-                {
+                else if (networkRequest.action == "start_recording") {
                     if (numCharacters == 0)
                     {
                         networkRequest = null;
@@ -1233,7 +1228,6 @@ namespace StoryGenerator
 
                     ExecutionConfig config = JsonConvert.DeserializeObject<ExecutionConfig>(networkRequest.stringParams[0]);
 
-
                     if (config.randomize_execution) {
                         InitRandom(config.random_seed);
                     }
@@ -1241,7 +1235,7 @@ namespace StoryGenerator
                     if (currentGraph == null)
                     {
                         currentGraphCreator = new EnvironmentGraphCreator(dataProviders);
-                        currentGraph = currentGraphCreator.CreateGraph(houseTransform);
+                        currentGraph = currentGraphCreator.CreateGraph(transform);
                     }
 
                     string outDir = Path.Combine(config.output_folder, config.file_name_prefix);
@@ -1253,8 +1247,8 @@ namespace StoryGenerator
                         objectSelectorProvider = new ObjectSelectionProvider(dataProviders.NameEquivalenceProvider);
                     else
                         objectSelectorProvider = new InstanceSelectorProvider(currentGraph);
-                    IList<GameObject> objectList = ScriptUtils.FindAllObjects(houseTransform);
-                    // TODO: check if we need this
+                    IList<GameObject> objectList = ScriptUtils.FindAllObjects(transform);
+
                     if (recorders.Count != numCharacters)
                     {
                         createRecorders(config);
@@ -1276,18 +1270,14 @@ namespace StoryGenerator
                     }
                     if (config.skip_animation)
                     {
-                        UtilsAnnotator.SetSkipAnimation(houseTransform);
+                        UtilsAnnotator.SetSkipAnimation(transform);
                     }
-                    // initialize the recorders
                     if (config.recording)
                     {
                         for (int i = 0; i < numCharacters; i++)
                         {
-                            // Debug.Log($"cameraCtrl is not null? : {recorders[i].CamCtrl != null}");
                             recorders[i].Initialize();
                             recorders[i].Animator = characters[i].GetComponent<Animator>();
-                            
-                            //recorders[i].Animator.speed = 1;
                         }
 
                     }
@@ -1317,11 +1307,7 @@ namespace StoryGenerator
                         parseSuccess = false;
                         response.success = false;
                         response.message = $"Error parsing script: {e.Message}";
-                        //continue;
                     }
-
-                    //s_SimulatePerfMarker.Begin();
-
 
                     if (parseSuccess)
                     {
@@ -1338,15 +1324,10 @@ namespace StoryGenerator
                             yield return new WaitForSeconds(0.01f);
                         }
 
-                        // Add back errors from concurrent actions
-
                         for (int error_index = 0; error_index < error_messages.Count; error_index++)
                         {
                             sExecutors[error_messages[error_index].Item1].report.AddItem(error_messages[error_index].Item2.Item1, error_messages[error_index].Item2.Item2);
                         }
-
-                    
-                        //s_SimulatePerfMarker.End();
 
                         finishedChars = 0;
                         ScriptExecutor.actionsPerLine = new Hashtable();
@@ -1359,7 +1340,6 @@ namespace StoryGenerator
 
                         bool agent_failed_action = false;
                         Dictionary<int, Dictionary<String, String>> messages = new Dictionary<int, Dictionary<String, String>>();
-
 
                         if (!config.recording)
                         {
@@ -1404,8 +1384,6 @@ namespace StoryGenerator
                                 }
                                 else if (rec.Error != null)
                                 {
-                                    //Directory.Delete(rec.OutputDirectory);
-                                    //response.success = false;
                                     agent_failed_action = true;
                                     String message = "";
                                     message += $"Recorder {i}: ";
@@ -1430,13 +1408,10 @@ namespace StoryGenerator
                                     rec.CreateTextualGTs();
                                 }
 
-
                                 messages[i] = current_message;
                             }
                         }
                         response.message = JsonConvert.SerializeObject(messages);
-
-                        // If any of the agent fails an action, report failure
 
                         if (agent_failed_action)
                             response.success = false;
@@ -1463,8 +1438,6 @@ namespace StoryGenerator
                                 }
                                 if (sExecutors[char_index].script.Count == 1)
                                 {
-                                    // If only one action was executed, we will use that action to update the environment
-                                    // Otherwise, we will update using coordinates
                                     ScriptPair script = sExecutors[char_index].script[0];
                                     ActionObjectData object_script = new ActionObjectData(character_graph, script, currentState.scriptObjects);
                                     last_action.Add(object_script);
@@ -1497,24 +1470,15 @@ namespace StoryGenerator
                                 {
                                     if (!entry.Value.GameObject.IsRoom())
                                     {
-                                        //if (entry.Key.Item1 == "cutleryknife")
-                                        //{
-
-                                        //    //int instance_id = entry.Value.GameObject.GetInstanceID();
-                                        //}
                                         changedObjs.Add(entry.Value.GameObject);
                                     }
 
                                     if (entry.Value.OpenStatus != OpenStatus.UNKNOWN)
                                     {
-                                        //if (script_object_changed.ContainsKey(entry.Key))
-                                        //{
-                                        //    Debug.Log("Error, 2 agents trying to interact at the same time");
                                         if (sExecutors[char_index].script.Count > 0 && sExecutors[char_index].script[0].Action.Name.Instance == entry.Key.Item2)
                                         {
                                             script_object_changed[entry.Key] = entry.Value;
                                         }
-
                                     }
 
                                 }
@@ -1536,13 +1500,12 @@ namespace StoryGenerator
                             using (s_UpdateGraph.Auto())
                             {
                                 if (single_action)
-                                    currentGraph = currentGraphCreator.UpdateGraph(houseTransform, null, last_action);
+                                    currentGraph = currentGraphCreator.UpdateGraph(transform, null, last_action);
                                 else
-                                    currentGraph = currentGraphCreator.UpdateGraph(houseTransform, changedObjs);
+                                    currentGraph = currentGraphCreator.UpdateGraph(transform, changedObjs);
                             }
                         }
                     }
-                }
 
                 else if (networkRequest.action == "stop_recording") 
                 {
@@ -1558,12 +1521,12 @@ namespace StoryGenerator
                     }
                 } 
 
-
-
                 else if (networkRequest.action == "idle") {
                     response.success = true;
                     response.message = "";
-                } else {
+                } 
+                
+                else {
                     response.success = false;
                     response.message = "Unknown action " + networkRequest.action;
                 }
@@ -2082,6 +2045,15 @@ namespace StoryGenerator
         public Vector3 position = new Vector3(0.0f, 0.0f, 0.0f);
         public float focal_length = 0.0f;
         public string camera_name = "default";
+
+    }
+
+    public class SensorConfig
+    {
+        public Vector3 rotation = new Vector3(0.0f, 0.0f, 0.0f);
+        public Vector3 position = new Vector3(0.0f, 0.0f, 0.0f);
+        public float radius = 0.0f;
+        public string sensor_name = "default";
 
     }
 
