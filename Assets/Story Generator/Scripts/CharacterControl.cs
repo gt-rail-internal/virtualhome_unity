@@ -666,6 +666,16 @@ namespace StoryGenerator
             yield return SimpleAction("DrinkRight");
         }
 
+        public IEnumerator IdleLeft()
+        {
+            yield return SimpleAction("IdleLeft");
+        }
+
+        public IEnumerator IdleRight()
+        {
+            yield return SimpleAction("IdleRight");
+        }
+
         public IEnumerator TextLeft()
         {
             yield return SimpleAction("TextLeft");

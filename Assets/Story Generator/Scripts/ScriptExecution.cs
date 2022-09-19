@@ -308,6 +308,21 @@ namespace StoryGenerator.Utilities
         }
     }
 
+    public class IdleAction : IAction
+    {
+        public ScriptObjectName Name { get; private set; }
+        public int ScriptLine { get; private set; }
+        public IObjectSelector Selector;
+
+
+        public IdleAction(int scriptLine, IObjectSelector selector, string name, int instance)
+        {
+            ScriptLine = scriptLine;
+            Selector = selector;
+            Name = new ScriptObjectName(name, instance);
+        }
+    }
+
     public class PhoneAction : IAction
     {
         public enum PhoneActionType { TALK, TEXT };
@@ -994,6 +1009,11 @@ namespace StoryGenerator.Utilities
         public void AddAction(DrinkAction a)
         {
             script.Add(new ScriptPair() { Action = a, ProcessMethod = ((ac, s) => this.ProcessDrink((DrinkAction)ac, s)) });
+        }
+
+        public void AddAction(IdleAction a)
+        {
+            script.Add(new ScriptPair() { Action = a, ProcessMethod = ((ac, s) => this.ProcessIdle((IdleAction)ac, s)) });
         }
 
         public void AddAction(PhoneAction a)
@@ -2303,6 +2323,26 @@ namespace StoryGenerator.Utilities
             return StateList.Empty;
         }
 
+        private IEnumerable<IStateGroup> ProcessIdle(IdleAction a, State current)
+        {
+            GameObject go = current.GetScriptGameObject(a.Name);
+
+            if (go == null)
+            {
+                report.AddItem("PROCESS IDLE", $"Not found object: {a.Name.Name}");
+            }
+            else if (go == current.GetGameObject("RIGHT_HAND_OBJECT") || go == current.GetGameObject("LEFT_HAND_OBJECT"))
+            {
+                return ProcessIdleAction(a, current);
+            }
+            else
+            {
+                GrabAction ga = new GrabAction(a.ScriptLine, a.Selector, a.Name.Name, a.Name.Instance);
+                return CreateStateGroup(current, s => ProcessGrab(ga, s), s => ProcessIdleAction(a, s));
+            }
+            return StateList.Empty;
+        }
+
         // Grab (if necessary) + phone action (talk, text)
         private IEnumerable<IStateGroup> ProcessPhone(PhoneAction a, State current)
         {
@@ -2354,6 +2394,28 @@ namespace StoryGenerator.Utilities
             else if (go == current.GetGameObject("LEFT_HAND_OBJECT"))
             {
                 State s = new State(current, a, current.InteractionPosition, ExecuteDrink);
+                s.AddObject("INTERACTION_HAND", FullBodyBipedEffector.LeftHand);
+                yield return s;
+            }
+        }
+
+        private IEnumerable<IStateGroup> ProcessIdleAction(IdleAction a, State current)
+        {
+            GameObject go = current.GetScriptGameObject(a.Name);
+
+            if (go == null)
+            {
+                report.AddItem("PROCESS IDLE", $"Not found object: {a.Name.Name}");
+            }
+            else if (go == current.GetGameObject("RIGHT_HAND_OBJECT"))
+            {
+                State s = new State(current, a, current.InteractionPosition, ExecuteIdle);
+                s.AddObject("INTERACTION_HAND", FullBodyBipedEffector.RightHand);
+                yield return s;
+            }
+            else if (go == current.GetGameObject("LEFT_HAND_OBJECT"))
+            {
+                State s = new State(current, a, current.InteractionPosition, ExecuteIdle);
                 s.AddObject("INTERACTION_HAND", FullBodyBipedEffector.LeftHand);
                 yield return s;
             }
@@ -2964,6 +3026,29 @@ namespace StoryGenerator.Utilities
                 yield return characterControl.DrinkLeft();
             else if (intHand == FullBodyBipedEffector.RightHand)
                 yield return characterControl.DrinkRight();
+
+            if (cameraControls != null)
+            {
+                for (int cam_id = 0; cam_id < cameraControls.Count; cam_id++)
+                    if (cameraControls[cam_id] != null)
+                        cameraControls[cam_id].ClearVisibleArea();
+            }
+        }
+
+        private IEnumerator ExecuteIdle(State s)
+        {
+            var intHand = (FullBodyBipedEffector)s.GetObject("INTERACTION_HAND");
+            if (cameraControls != null)
+            {
+                for (int cam_id = 0; cam_id < cameraControls.Count; cam_id++)
+                    if (cameraControls[cam_id] != null)
+                        cameraControls[cam_id].SetVisibleArea(characterControl.UpperPartArea());
+            }
+            recorder.MarkActionStart(InteractionType.IDLE, s.Action.ScriptLine);
+            if (intHand == FullBodyBipedEffector.LeftHand)
+                yield return characterControl.IdleLeft();
+            else if (intHand == FullBodyBipedEffector.RightHand)
+                yield return characterControl.IdleRight();
 
             if (cameraControls != null)
             {
@@ -4114,6 +4199,9 @@ namespace StoryGenerator.Utilities
                     break;
                 case InteractionType.DRINK:
                     sExecutor.AddAction(new DrinkAction(sl.LineNumber, sExecutor.GetObjectSelector(name0, instance0), name0, instance0));
+                    break;
+                case InteractionType.IDLE:
+                    sExecutor.AddAction(new IdleAction(sl.LineNumber, sExecutor.GetObjectSelector(name0, instance0), name0, instance0));
                     break;
                 case InteractionType.TALK:
                     sExecutor.AddAction(new PhoneAction(sl.LineNumber, sExecutor.GetObjectSelector(name0, instance0), name0, instance0, PhoneAction.PhoneActionType.TALK));
