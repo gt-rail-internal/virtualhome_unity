@@ -1141,78 +1141,78 @@ namespace StoryGenerator
 
                 }
 
-                else if (networkRequest.action == "add_sensor") 
-                {
-                    SensorConfig sensor_config = JsonConvert.DeserializeObject<SensorConfig>(networkRequest.stringParams[0]);
-                    String sensor_name = sensors.Count().ToString();
-                    GameObject go = new GameObject("new_sensor" + sensor_name, typeof(Sensor));
-                    Sensor new_sensor = go.GetComponent<Sensor>();
+                // else if (networkRequest.action == "add_sensor") 
+                // {
+                //     SensorConfig sensor_config = JsonConvert.DeserializeObject<SensorConfig>(networkRequest.stringParams[0]);
+                //     String sensor_name = sensors.Count().ToString();
+                //     GameObject go = new GameObject("new_sensor" + sensor_name, typeof(Sensor));
+                //     Sensor new_sensor = go.GetComponent<Sensor>();
 
-                    // new_camera.usePhysicalProperties = true;
-                    float radius = sensor_config.radius;
-                    new_sensor.radius = radius;
+                //     // new_camera.usePhysicalProperties = true;
+                //     float radius = sensor_config.radius;
+                //     new_sensor.radius = radius;
 
-                    Vector3 position_vec = sensor_config.position;
-                    Vector3 rotation_vec = sensor_config.rotation;
+                //     Vector3 position_vec = sensor_config.position;
+                //     Vector3 rotation_vec = sensor_config.rotation;
 
-                    go.transform.localPosition = position_vec;
-                    go.transform.localEulerAngles = rotation_vec;
+                //     go.transform.localPosition = position_vec;
+                //     go.transform.localEulerAngles = rotation_vec;
 
-                    sensors.Add(new_sensor);
-                    response.message = "New sensor created. Id:" + sensor_name;
-                    response.success = true;;
-                    cameraInitializer.initialized = false;
-                    SensorUtils.DeactivateSensors(sensors);
-                }
+                //     sensors.Add(new_sensor);
+                //     response.message = "New sensor created. Id:" + sensor_name;
+                //     response.success = true;;
+                //     cameraInitializer.initialized = false;
+                //     SensorUtils.DeactivateSensors(sensors);
+                // }
 
-                else if (networkRequest.action == "sensor_count"){
-                    response.success = true;
-                    response.value = sensors.Count;
-                }
+                // else if (networkRequest.action == "sensor_count"){
+                //     response.success = true;
+                //     response.value = sensors.Count;
+                // }
 
-                else if (networkRequest.action == "sensor_data") 
-                {
-                    sensorInitializer.Initialize(() => SensorUtils.Init(sensors));
+                // else if (networkRequest.action == "sensor_data") 
+                // {
+                //     sensorInitializer.Initialize(() => SensorUtils.Init(sensors));
 
-                    IList<int> indexes = networkRequest.intParams;
+                //     IList<int> indexes = networkRequest.intParams;
 
-                    if (!CheckSensorIndexes(indexes, sensors.Count)) {
-                        response.success = false;
-                        response.message = "Invalid parameters";
-                    } else {
-                        IList<SensorInfo> sensorData = SensorUtils.CreateSensorData(sensors, indexes);
+                //     if (!CheckSensorIndexes(indexes, sensors.Count)) {
+                //         response.success = false;
+                //         response.message = "Invalid parameters";
+                //     } else {
+                //         IList<SensorInfo> sensorData = SensorUtils.CreateSensorData(sensors, indexes);
 
-                        response.success = true;
-                        response.message = JsonConvert.SerializeObject(sensorData);
-                    }
-                }
+                //         response.success = true;
+                //         response.message = JsonConvert.SerializeObject(sensorData);
+                //     }
+                // }
 
-                else if (networkRequest.action == "update_sensor")
-                {
-                    SensorConfig sensor_config = JsonConvert.DeserializeObject<SensorConfig>(networkRequest.stringParams[0]);
-                    IList<int> indexes = networkRequest.intParams;
-                    int index = indexes[0];
-                    if (index >= sensors.Count())
-                    {
-                        response.message = "The sensor index is not valid, there are only "+sensors.Count().ToString()+" sensors";
-                    }
-                    else
-                    {
-                        Sensor sensor = sensors[index];
-                        float radius = sensor_config.radius;
-                        sensor.radius = radius;
-                        sensor.renderingPath = RenderingPath.UsePlayerSettings;
+                // else if (networkRequest.action == "update_sensor")
+                // {
+                //     SensorConfig sensor_config = JsonConvert.DeserializeObject<SensorConfig>(networkRequest.stringParams[0]);
+                //     IList<int> indexes = networkRequest.intParams;
+                //     int index = indexes[0];
+                //     if (index >= sensors.Count())
+                //     {
+                //         response.message = "The sensor index is not valid, there are only "+sensors.Count().ToString()+" sensors";
+                //     }
+                //     else
+                //     {
+                //         Sensor sensor = sensors[index];
+                //         float radius = sensor_config.radius;
+                //         sensor.radius = radius;
+                //         sensor.renderingPath = RenderingPath.UsePlayerSettings;
 
-                        Vector3 position_vec = sensor_config.position;
-                        Vector3 rotation_vec = sensor_config.rotation;
-                        GameObject go = sensor.gameObject;
-                        go.transform.localPosition = position_vec;
-                        go.transform.localEulerAngles = rotation_vec;
+                //         Vector3 position_vec = sensor_config.position;
+                //         Vector3 rotation_vec = sensor_config.rotation;
+                //         GameObject go = sensor.gameObject;
+                //         go.transform.localPosition = position_vec;
+                //         go.transform.localEulerAngles = rotation_vec;
 
-                        response.message = "Sensor updated";
-                        response.success = true;
-                    }
-                }
+                //         response.message = "Sensor updated";
+                //         response.success = true;
+                //     }
+                // }
 
                 else if (networkRequest.action == "start_recording") {
                     if (numCharacters == 0)
@@ -1506,6 +1506,7 @@ namespace StoryGenerator
                             }
                         }
                     }
+                }
 
                 else if (networkRequest.action == "stop_recording") 
                 {
