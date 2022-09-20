@@ -2043,6 +2043,20 @@ namespace StoryGenerator
         public List<string> camera_mode = new List<string>();
     }
 
+    public class DataConfig
+    {
+        public string output_folder = "Output/";
+        public string file_name_prefix = "script";
+        public int frame_rate = 10;
+        public List<string> image_synthesis = new List<string>();
+        public bool save_pose_data = true;
+        public bool save_scene_states = true;
+        public bool randomize_recording = false;
+        public int image_width = 640;
+        public int image_height = 480;
+        public List<string> camera_mode = new List<string>();
+    }
+
     public class ImageConfig : RecorderConfig
     {
         public string mode = "normal";
