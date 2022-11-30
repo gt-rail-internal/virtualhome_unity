@@ -1,4 +1,4 @@
-using StoryGenerator.Helpers;
+﻿using StoryGenerator.Helpers;
 using StoryGenerator.Utilities;
 using StoryGenerator.RoomProperties;
 using System;
@@ -448,16 +448,16 @@ namespace StoryGenerator.Scripts
             return result;
         }
 
-        // public static List<Sensor> FindAllSensors(Transform tsfm)
-        // {
-        //     List<Sensor> result = new List<Sensor>();
+        public static List<Sensor> FindAllSensors(Transform tsfm)
+        {
+            List<Sensor> result = new List<Sensor>();
 
-        //     foreach (GameObject go in ScriptUtils.FindAllObjects(tsfm, t => t.GetComponent<Sensor>() != null && t.GetComponent<Sensor>().enabled))
-        //     {
-        //         result.Add(go.GetComponent<Sensor>());
-        //     }
-        //     return result;
-        // }
+            foreach (GameObject go in ScriptUtils.FindAllObjects(tsfm, t => t.GetComponent<Sensor>() != null && t.GetComponent<Sensor>().enabled))
+            {
+                result.Add(go.GetComponent<Sensor>());
+            }
+            return result;
+        }
 
         public static List<GameObject> FindAllCharacters(Transform tsfm)
         {

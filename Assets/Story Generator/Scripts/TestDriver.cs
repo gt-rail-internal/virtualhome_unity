@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -62,7 +62,9 @@ namespace StoryGenerator
         private List<GameObject> rooms = new List<GameObject>();
 
         //SENSORS
+        List<Sensor> sceneSensors;
         List<Sensor> sensors;
+        private int numSceneSensors = 0;
 
         WaitForSeconds WAIT_AFTER_END_OF_SCENE = new WaitForSeconds(3.0f);
 
@@ -206,9 +208,9 @@ namespace StoryGenerator
             EnvironmentGraph currentGraph = null;
             int expandSceneCount = 0;
 
-            // sceneSensors = ScriptUtils.FindAllSensors(transform);
-            // numSceneSensors = sceneCameras.Count;
-            // cameras = sceneCameras.ToList();
+            sceneSensors = ScriptUtils.FindAllSensors(transform);
+            numSceneSensors = sceneSensors.Count;
+            sensors = sceneSensors.ToList();
 
             InitRooms();
 
@@ -1155,7 +1157,10 @@ namespace StoryGenerator
 
                 else if (networkRequest.action == "add_sensor") 
                 {
+                    Debug.Log("adding sensor");
                     SensorConfig sensor_config = JsonConvert.DeserializeObject<SensorConfig>(networkRequest.stringParams[0]);
+                    Debug.Log(sensors);
+                    
                     String sensor_name = sensors.Count().ToString();
                     GameObject go = new GameObject("new_sensor" + sensor_name, typeof(Sensor));
                     Sensor new_sensor = go.GetComponent<Sensor>();
